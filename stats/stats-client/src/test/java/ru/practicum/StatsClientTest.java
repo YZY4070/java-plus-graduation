@@ -1,4 +1,4 @@
-package ru.practicum.stats.client;
+package ru.practicum;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
