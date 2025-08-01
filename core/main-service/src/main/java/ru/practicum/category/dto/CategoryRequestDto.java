@@ -9,6 +9,8 @@ import lombok.experimental.FieldDefaults;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CategoryRequestDto {
+    Long id;
+
     @NotBlank
     @Size(min = 1, max = 50, message = "Name length must be between 1 and 25 characters")
     String name;
