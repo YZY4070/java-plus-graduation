@@ -3,8 +3,7 @@ package ru.practicum.service.stats;
 import lombok.*;
 
 @Builder
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class StatsDtoResponse {

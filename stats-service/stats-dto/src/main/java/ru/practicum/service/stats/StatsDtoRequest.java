@@ -6,8 +6,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Builder
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class StatsDtoRequest {

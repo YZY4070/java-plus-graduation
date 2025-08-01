@@ -1,11 +1,13 @@
 package ru.practicum.service.stats.controller;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.StatsClient;
 import ru.practicum.service.stats.StatsDtoResponse;
 import ru.practicum.service.stats.service.StatsService;
 import ru.practicum.service.stats.GetStatsRequest;
@@ -16,7 +18,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-public class StatsController {
+public class StatsController implements StatsClient {
     final StatsService statsService;
 
     @Autowired
@@ -33,7 +35,7 @@ public class StatsController {
 
     @GetMapping("/stats")
     @ResponseStatus(HttpStatus.OK)
-    public List<StatsDtoResponse> findStats(
+    public List<StatsDtoResponse> getStatistics(
             @RequestParam("start") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") @NotNull LocalDateTime start,
             @RequestParam("end") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") @NotNull LocalDateTime end,
             @RequestParam(name = "uris", required = false) List<String> uris,

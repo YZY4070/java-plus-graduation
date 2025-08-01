@@ -27,5 +27,5 @@ public interface StatsClient {
     List<StatsDtoResponse> getStatistics(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
                                          @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
                                          @RequestParam(required = false) List<String> uris,
-                                         @RequestParam(defaultValue = "false") boolean unique) throws FeignException;
+                                         @RequestParam(defaultValue = "false") Boolean unique) throws FeignException;
 }
