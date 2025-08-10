@@ -52,7 +52,7 @@ public class CommentServiceImpl implements CommentService {
 
     public List<CommentDto> getAllCommentsByUserId(Long userId) {
         userClient.getUserById(userId);
-        return commentRepository.findAllByUserId(userId)
+        return commentRepository.findAllByAuthorId(userId)
                 .stream()
                 .map(CommentMapper::toDto)
                 .toList();
