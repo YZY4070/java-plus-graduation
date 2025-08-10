@@ -140,7 +140,7 @@ public class EventServiceImpl implements EventService {
     public Collection<EventShortDto> getUserEvents(Long userId, Integer from, Integer size) {
         UserDto user = findUserById(userId);
         Pageable pageable = PageRequest.of(from / size, size);
-        var events = eventRepository.findAllByInitiator(user.getId(), pageable);
+        var events = eventRepository.findAllByInitiatorId(user.getId(), pageable);
 
         // Получаем статистику просмотров
         List<String> uris = events.stream()
@@ -186,7 +186,7 @@ public class EventServiceImpl implements EventService {
     @Transactional(readOnly = true)
     public EventFullDto getUserEvent(Long userId, Long eventId) {
         UserDto user = findUserById(userId);
-        Event event = eventRepository.findByIdAndInitiator(eventId, user.getId())
+        Event event = eventRepository.findByIdAndInitiatorId(eventId, user.getId())
                 .orElseThrow(() -> new NotFoundException("Событие с id=" + eventId + " не найдено"));
 
         // Получаем статистику просмотров
@@ -200,7 +200,7 @@ public class EventServiceImpl implements EventService {
     @Transactional
     public EventFullDto updateUserEvent(Long userId, Long eventId, UpdateEventUserRequest updateRequest) {
         UserDto user = findUserById(userId);
-        Event event = eventRepository.findByIdAndInitiator(eventId, user.getId())
+        Event event = eventRepository.findByIdAndInitiatorId(eventId, user.getId())
                 .orElseThrow(() -> new NotFoundException("Событие с id=" + eventId + " не найдено"));
 
         // Проверка статуса события

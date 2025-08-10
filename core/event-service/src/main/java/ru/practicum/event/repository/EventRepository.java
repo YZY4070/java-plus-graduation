@@ -15,9 +15,9 @@ import java.util.Set;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
 
-    Page<Event> findAllByInitiator(Long initiator, Pageable pageable);
+    Page<Event> findAllByInitiatorId(Long initiator, Pageable pageable);
 
-    Optional<Event> findByIdAndInitiator(Long eventId, Long initiator);
+    Optional<Event> findByIdAndInitiatorId(Long id, Long initiatorId);
 
     boolean existsByCategoryId(Long categoryId);
 
