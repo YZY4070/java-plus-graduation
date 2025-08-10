@@ -23,10 +23,10 @@ public class Comment {
     String text;
 
     @JoinColumn(name = "event_id", nullable = false)
-    Long event;
+    Long eventId;
 
     @JoinColumn(name = "author_id", nullable = false)
-    Long userId;
+    Long authorId;
 
     @Column(nullable = false)
     LocalDateTime created;

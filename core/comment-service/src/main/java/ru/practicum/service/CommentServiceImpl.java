@@ -72,7 +72,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("Comment not found: " + commentId));
         eventClient.getEventByIdFeign(eventId);
         checkUserIsAuthor(comment, userId);
-        if (!comment.getEvent().equals(eventId)) {
+        if (!comment.getEventId().equals(eventId)) {
             throw new ValidationException("Comment has wrong event");
         }
         commentRepository.deleteById(commentId);
@@ -97,7 +97,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private void checkUserIsAuthor(Comment comment, Long userId) {
-        if (!comment.getUserId().equals(userId)) {
+        if (!comment.getAuthorId().equals(userId)) {
             throw new ValidationException("User " + userId + " is not author of comment " + comment.getId());
         }
     }
