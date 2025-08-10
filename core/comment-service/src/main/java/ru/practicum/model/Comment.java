@@ -26,7 +26,7 @@ public class Comment {
     Long event;
 
     @JoinColumn(name = "author_id", nullable = false)
-    Long user;
+    Long userId;
 
     @Column(nullable = false)
     LocalDateTime created;
