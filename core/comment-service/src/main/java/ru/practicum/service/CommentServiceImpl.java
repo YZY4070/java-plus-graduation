@@ -97,7 +97,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private void checkUserIsAuthor(Comment comment, Long userId) {
-        if (!comment.getUser().equals(userId)) {
+        if (!comment.getUserId().equals(userId)) {
             throw new ValidationException("User " + userId + " is not author of comment " + comment.getId());
         }
     }
