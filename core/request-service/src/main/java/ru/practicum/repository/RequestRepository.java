@@ -7,7 +7,7 @@ import ru.practicum.model.Request;
 import java.util.List;
 
 public interface RequestRepository extends JpaRepository<Request, Long> {
-    Boolean existsByEventAndRequesterAndStatusNot(Long event, Long requester, RequestStatus status);
+    Boolean existsByEventIdAndRequesterIdAndStatusNot(Long event, Long requester, RequestStatus status);
 
     List<Request> findAllByRequesterId(Long requesterId);
 

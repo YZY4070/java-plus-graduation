@@ -47,7 +47,7 @@ public class RequestServiceImpl implements RequestService {
         EventFullDto event = eventClient.getEventByIdFeign(eventId);
 
         // Проверка: нельзя добавить повторный запрос
-        if (requestRepository.existsByEventAndRequesterAndStatusNot(event.getId(), user.getId(), RequestStatus.CANCELED)) {
+        if (requestRepository.existsByEventIdAndRequesterIdAndStatusNot(event.getId(), user.getId(), RequestStatus.CANCELED)) {
             throw new ConflictException("Запрос на участие в событии с id=" + eventId + " уже существует");
         }
 
