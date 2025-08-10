@@ -1,8 +1,9 @@
 package ru.practicum.service.stats.service;
 
-import ru.practicum.service.stats.GetStatsRequest;
-import ru.practicum.service.stats.StatsDtoRequest;
-import ru.practicum.service.stats.StatsDtoResponse;
+
+
+import ru.practicum.dto.stats.StatsDtoRequest;
+import ru.practicum.dto.stats.StatsDtoResponse;
 
 import java.util.List;
 
