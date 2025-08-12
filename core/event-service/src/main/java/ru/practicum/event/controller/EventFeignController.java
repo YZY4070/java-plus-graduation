@@ -18,12 +18,12 @@ public class EventFeignController implements EventClient {
 
     @Override
     public EventFullDto getEventByIdFeign(Long eventId) {
-        return eventService.getEvent(eventId);
+        return eventService.getEventByIdFeign(eventId);
     }
 
     @Override
     public EventFullDto getEventByUserFeign(Long userId, Long eventId) {
-        return eventService.getUserEvent(userId, eventId);
+        return eventService.getEventByUserFeign(userId, eventId);
     }
 
     @Override

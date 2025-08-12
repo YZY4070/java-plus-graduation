@@ -31,4 +31,9 @@ public interface EventService {
 
     //Для реквестов
     void updateEventForRequests(Long eventId, EventFullDto eventFullDto);
+
+    EventFullDto getEventByIdFeign(Long eventId);
+
+    EventFullDto getEventByUserFeign(Long eventId, Long userId);
+
 }

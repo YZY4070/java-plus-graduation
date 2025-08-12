@@ -175,7 +175,8 @@ public class EventServiceImpl implements EventService {
                 ));
 
         Event event = eventMapper.toEvent(newEventDto);
-        event.setInitiatorId(userId);
+        event.setInitiatorId(initiator.getId());
+        event.setCategory(category);
         event.setLocation(location);
         event = eventRepository.save(event);
 
@@ -192,8 +193,14 @@ public class EventServiceImpl implements EventService {
         // Получаем статистику просмотров
         List<String> uris = List.of("/events/" + eventId);
         Map<Long, Long> viewStats = getViewStats(uris);
-
-        return eventMapper.toEventFullDto(event, viewStats.getOrDefault(eventId, 0L));
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(event, viewStats.getOrDefault(eventId, 0L));
+        UserDto userDto = userClient.getUserById(user.getId());
+        UserShortDto userShortDto = UserShortDto.builder()
+                .id(userDto.getId())
+                .name(userDto.getName())
+                .build();
+        eventFullDto.setInitiator(userShortDto);
+        return eventFullDto;
     }
 
     @Override
@@ -457,5 +464,22 @@ public class EventServiceImpl implements EventService {
        Event event = findEventById(eventId);
        event.setConfirmedRequests(eventFullDto.getConfirmedRequests());
        eventRepository.save(event);
+    }
+
+    @Override
+    public EventFullDto getEventByIdFeign(Long eventId) {
+        Event event = findEventById(eventId);
+        List<String> uris = List.of("/events/" + eventId);
+        Map<Long, Long> viewStats = getViewStats(uris);
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(event, viewStats.getOrDefault(eventId, 0L));
+        UserDto userDto = userClient.getUserById(event.getInitiatorId());
+        UserShortDto userShortDto = UserShortDto.builder().id(userDto.getId()).name(userDto.getName()).build();
+        eventFullDto.setInitiator(userShortDto);
+        return eventFullDto;
+    }
+
+    @Override
+    public EventFullDto getEventByUserFeign(Long eventId, Long userId){
+        return getUserEvent(userId, eventId);
     }
 }
