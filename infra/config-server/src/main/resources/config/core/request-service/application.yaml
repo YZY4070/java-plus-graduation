@@ -3,6 +3,7 @@ server:
 
 logging:
   level:
+    org.springframework.root: INFO
     org.springframework.web: INFO
     org.springframework.orm.jpa: INFO
     org.springframework.transaction: INFO
