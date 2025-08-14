@@ -12,6 +12,6 @@ public class CategoryRequestDto {
     Long id;
 
     @NotBlank
-    @Size(min = 1, max = 25, message = "Name length must be between 1 and 25 characters")
+    @Size(min = 1, max = 50, message = "Name length must be between 1 and 50 characters")
     String name;
 }
