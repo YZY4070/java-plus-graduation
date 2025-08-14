@@ -2,6 +2,8 @@ package ru.practicum.mapper;
 
 
 import lombok.experimental.UtilityClass;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import ru.practicum.model.Comment;
 import ru.practicum.dto.comment.CommentCreateDto;
 import ru.practicum.dto.comment.CommentDto;
@@ -10,46 +12,32 @@ import ru.practicum.dto.event.EventWithCommentsDto;
 
 import java.util.List;
 
+@Mapper(componentModel = "spring")
+public interface CommentMapper {
 
-@UtilityClass
-public class CommentMapper {
+    @Mapping(target = "id", ignore = true) // генерируется БД
+    @Mapping(target = "eventId", ignore = true) // будет выставляться отдельно
+    @Mapping(target = "authorId", ignore = true) // будет выставляться отдельно
+    Comment toEntity(CommentCreateDto commentCreateDto);
 
-    public static Comment toEntity(CommentCreateDto commentCreateDto) {
-        return Comment.builder()
-                .text(commentCreateDto.getText())
-                .created(commentCreateDto.getCreated())
-                .build();
-    }
+    CommentDto toDto(Comment comment);
 
-    public static CommentDto toDto(Comment comment) {
-        return CommentDto.builder()
-                .id(comment.getId())
-                .text(comment.getText())
-                .eventId(comment.getEventId())
-                .authorId(comment.getAuthorId())
-                .created(comment.getCreated())
-                .build();
-    }
-
-    public static EventWithCommentsDto toDto(EventFullDto event, List<CommentDto> comments) {
-        return EventWithCommentsDto.builder()
-                .id(event.getId())
-                .title(event.getTitle())
-                .annotation(event.getAnnotation())
-                .description(event.getDescription())
-                .category(event.getCategory())
-                .eventDate(event.getEventDate())
-                .location(event.getLocation())
-                .paid(event.getPaid())
-                .participantLimit(event.getParticipantLimit())
-                .requestModeration(event.getRequestModeration())
-                .confirmedRequests(event.getConfirmedRequests())
-                .createdOn(event.getCreatedOn())
-                .initiator(event.getInitiator())
-                .state(event.getState())
-                .publishedOn(event.getPublishedOn())
-                .views(event.getViews())
-                .comments(comments)
-                .build();
-    }
+    @Mapping(target = "id", source = "event.id")
+    @Mapping(target = "title", source = "event.title")
+    @Mapping(target = "annotation", source = "event.annotation")
+    @Mapping(target = "description", source = "event.description")
+    @Mapping(target = "category", source = "event.category")
+    @Mapping(target = "eventDate", source = "event.eventDate")
+    @Mapping(target = "location", source = "event.location")
+    @Mapping(target = "paid", source = "event.paid")
+    @Mapping(target = "participantLimit", source = "event.participantLimit")
+    @Mapping(target = "requestModeration", source = "event.requestModeration")
+    @Mapping(target = "confirmedRequests", source = "event.confirmedRequests")
+    @Mapping(target = "createdOn", source = "event.createdOn")
+    @Mapping(target = "initiator", source = "event.initiator")
+    @Mapping(target = "state", source = "event.state")
+    @Mapping(target = "publishedOn", source = "event.publishedOn")
+    @Mapping(target = "views", source = "event.views")
+    @Mapping(target = "comments", source = "comments")
+    EventWithCommentsDto toDto(EventFullDto event, List<CommentDto> comments);
 }

@@ -2,7 +2,7 @@ package ru.practicum.compilation.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import ru.practicum.compilation.Compilation;
+import ru.practicum.compilation.model.Compilation;
 import ru.practicum.dto.compilations.CompilationDto;
 import ru.practicum.dto.compilations.NewCompilationDto;
 

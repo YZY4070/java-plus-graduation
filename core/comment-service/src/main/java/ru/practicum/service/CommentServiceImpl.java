@@ -28,13 +28,14 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final UserClient userClient;
     private final EventClient eventClient;
+    private final CommentMapper commentMapper;
 
 
     public List<CommentDto> getCommentsAdmin(Integer size, Integer from) {
         Pageable pageable = PageRequest.of(from / size, size);
         Page<Comment> commentPage = commentRepository.findAll(pageable);
         return commentPage.getContent().stream()
-                .map(CommentMapper::toDto)
+                .map(commentMapper::toDto)
                 .toList();
     }
 
@@ -47,14 +48,14 @@ public class CommentServiceImpl implements CommentService {
     public CommentDto createComment(CommentCreateDto commentCreateDto, Long userId, Long eventId) {
         userClient.getUserById(userId);
         eventClient.getEventByIdFeign(eventId);
-        return CommentMapper.toDto(commentRepository.save(CommentMapper.toEntity(commentCreateDto)));
+        return commentMapper.toDto(commentRepository.save(commentMapper.toEntity(commentCreateDto)));
     }
 
     public List<CommentDto> getAllCommentsByUserId(Long userId) {
         userClient.getUserById(userId);
         return commentRepository.findAllByAuthorId(userId)
                 .stream()
-                .map(CommentMapper::toDto)
+                .map(commentMapper::toDto)
                 .toList();
     }
 
@@ -64,7 +65,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("Comment not found: " + commentId));
         checkUserIsAuthor(comment, userId);
         comment.setText(commentUpdateDto.getText());
-        return CommentMapper.toDto(commentRepository.save(comment));
+        return commentMapper.toDto(commentRepository.save(comment));
     }
 
     public void deleteCommentByUserId(Long userId, Long commentId, Long eventId) {
@@ -83,7 +84,7 @@ public class CommentServiceImpl implements CommentService {
         Pageable pageable = PageRequest.of(from / size, size, Sort.by("created").descending());
         Page<Comment> commentPage = commentRepository.findByEventId(eventId, pageable);
         return commentPage.getContent().stream()
-                .map(CommentMapper::toDto)
+                .map(commentMapper::toDto)
                 .toList();
     }
 
@@ -91,9 +92,9 @@ public class CommentServiceImpl implements CommentService {
         eventClient.getEventByIdFeign(eventId);
         Pageable pageable = PageRequest.of(0, 3, Sort.by("created").descending());
         List<CommentDto> commentDtos = commentRepository.findByEventId(eventId, pageable).stream()
-                .map(CommentMapper::toDto)
+                .map(commentMapper::toDto)
                 .toList();
-        return CommentMapper.toDto(eventClient.getEventByIdFeign(eventId), commentDtos);
+        return commentMapper.toDto(eventClient.getEventByIdFeign(eventId), commentDtos);
     }
 
     private void checkUserIsAuthor(Comment comment, Long userId) {

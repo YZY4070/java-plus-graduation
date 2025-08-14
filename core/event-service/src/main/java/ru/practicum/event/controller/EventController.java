@@ -55,8 +55,4 @@ public class EventController {
         return eventService.getEvent(id);
     }
 
-//    @GetMapping("/comments/{eventId}")
-//    public EventWithCommentsDto getEventWithComments(@PathVariable Long eventId) {
-//        return commentService.getEventWithComments(eventId);
-//    }
 }
