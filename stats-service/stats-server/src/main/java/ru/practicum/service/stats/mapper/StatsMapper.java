@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.Named;
-import ru.practicum.service.stats.StatsDtoRequest;
+import ru.practicum.dto.stats.StatsDtoRequest;
 import ru.practicum.service.stats.model.Stats;
 
 import java.time.LocalDateTime;

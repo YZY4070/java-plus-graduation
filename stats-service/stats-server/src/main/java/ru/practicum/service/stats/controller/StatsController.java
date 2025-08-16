@@ -1,17 +1,15 @@
 package ru.practicum.service.stats.controller;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.StatsClient;
-import ru.practicum.service.stats.StatsDtoResponse;
+import ru.practicum.dto.stats.StatsDtoRequest;
+import ru.practicum.dto.stats.StatsDtoResponse;
 import ru.practicum.service.stats.service.StatsService;
-import ru.practicum.service.stats.GetStatsRequest;
-import ru.practicum.service.stats.StatsDtoRequest;
+import ru.practicum.service.stats.service.GetStatsRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
