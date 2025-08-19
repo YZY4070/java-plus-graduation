@@ -16,4 +16,8 @@ logging:
     org.springframework.transaction: INFO
     org.springframework.transaction.interceptor: INFO
     org.springframework.orm.jpa.JpaTransactionManager: INFO
-    org.zalando.logbook: TRACE
+
+user-action:
+  view: 0.4
+  register: 0.8
+  like: 1.0

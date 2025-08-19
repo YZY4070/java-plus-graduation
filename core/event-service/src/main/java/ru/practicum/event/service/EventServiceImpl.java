@@ -110,14 +110,8 @@ public class EventServiceImpl implements EventService {
 
         PageImpl<Event> page = new PageImpl<>(events, pageable, totalCount);
 
-        //List<String> uris = page.stream()
-        //.map(e -> "/events/" + e.getId())
-        //.collect(Collectors.toList());
-
-        //Map<Long, Long> viewStats = getViewStats(uris);
-
         return page.stream()
-                .map(eventMapper::toEventShortDto) //viewStats.getOrDefault(e.getId(), 0L)))
+                .map(eventMapper::toEventShortDto)
                 .collect(Collectors.toList());
     }
 
@@ -138,16 +132,8 @@ public class EventServiceImpl implements EventService {
         UserDto user = findUserById(userId);
         Pageable pageable = PageRequest.of(from / size, size);
         var events = eventRepository.findAllByInitiatorId(user.getId(), pageable);
-
-        // Получаем статистику просмотров
-        //List<String> uris = events.stream()
-        //.map(event -> "/events/" + event.getId())
-        //.collect(Collectors.toList());
-
-        //Map<Long, Long> viewStats = getViewStats(uris);
-
         return events.stream()
-                .map(eventMapper::toEventShortDto) //viewStats.getOrDefault(event.getId(), 0L)))
+                .map(eventMapper::toEventShortDto)
                 .collect(Collectors.toList());
     }
 
@@ -187,10 +173,7 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findByIdAndInitiatorId(eventId, user.getId())
                 .orElseThrow(() -> new NotFoundException("Событие с id=" + eventId + " не найдено"));
 
-        // Получаем статистику просмотров
-        //List<String> uris = List.of("/events/" + eventId);
-        //Map<Long, Long> viewStats = getViewStats(uris);
-        EventFullDto eventFullDto = eventMapper.toEventFullDto(event); //viewStats.getOrDefault(eventId, 0L));
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
         UserDto userDto = userClient.getUserById(user.getId());
         UserShortDto userShortDto = UserShortDto.builder()
                 .id(userDto.getId())
@@ -227,12 +210,7 @@ public class EventServiceImpl implements EventService {
         }
 
         event = eventRepository.save(event);
-
-        // Получаем статистику просмотров
-        //List<String> uris = List.of("/events/" + eventId);
-        //Map<Long, Long> viewStats = getViewStats(uris);
-
-        return eventMapper.toEventFullDto(event); //viewStats.getOrDefault(eventId, 0L));
+        return eventMapper.toEventFullDto(event);
     }
 
     @Override
@@ -249,16 +227,8 @@ public class EventServiceImpl implements EventService {
 
         Pageable pageable = PageRequest.of(from / size, size);
         var events = eventRepository.findAllByAdmin(users, statesList, categories, rangeStart, rangeEnd, pageable);
-
-        // Получаем статистику просмотров
-        // List<String> uris = events.stream()
-        // .map(event -> "/events/" + event.getId())
-        // .collect(Collectors.toList());
-
-        //Map<Long, Long> viewStats = getViewStats(uris);
-
         return events.stream()
-                .map(eventMapper::toEventFullDto) //viewStats.getOrDefault(event.getId(), 0L)))
+                .map(eventMapper::toEventFullDto)
                 .collect(Collectors.toList());
     }
 
@@ -299,12 +269,7 @@ public class EventServiceImpl implements EventService {
         }
 
         event = eventRepository.save(event);
-
-        // Получаем статистику просмотров
-        //List<String> uris = List.of("/events/" + eventId);
-        //Map<Long, Long> viewStats = getViewStats(uris);
-
-        return eventMapper.toEventFullDto(event); //viewStats.getOrDefault(eventId, 0L));
+        return eventMapper.toEventFullDto(event);
     }
 
     // Вспомогательные методы
@@ -431,8 +396,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventFullDto getEventByIdFeign(Long eventId) {
         Event event = findEventById(eventId);
-        List<String> uris = List.of("/events/" + eventId);
-        EventFullDto eventFullDto = eventMapper.toEventFullDto(event); //viewStats.getOrDefault(eventId, 0L));
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
         UserDto userDto = userClient.getUserById(event.getInitiatorId());
         UserShortDto userShortDto = UserShortDto.builder().id(userDto.getId()).name(userDto.getName()).build();
         eventFullDto.setInitiator(userShortDto);

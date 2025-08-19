@@ -16,8 +16,7 @@ public interface CommentMapper {
 
     @Mapping(target = "id", ignore = true) // генерируется БД
     @Mapping(target = "eventId", ignore = true) // будет выставляться отдельно
-    @Mapping(target = "authorId", ignore = true)
-        // будет выставляться отдельно
+    @Mapping(target = "authorId", ignore = true)// будет выставляться отдельно
     Comment toEntity(CommentCreateDto commentCreateDto);
 
     CommentDto toDto(Comment comment);

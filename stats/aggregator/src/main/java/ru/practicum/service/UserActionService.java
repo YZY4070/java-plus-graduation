@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.stats.avro.ActionTypeAvro;
 import ru.practicum.ewm.stats.avro.EventSimilarityAvro;
@@ -24,9 +25,14 @@ public class UserActionService {
     final Map<Long, Double> eventWeightSums = new HashMap<>();
     final Map<Long, Map<Long, Double>> eventMinWeightSums = new HashMap<>();
 
-    Double viewAction = 0.4;
-    Double registerAction = 0.8;
-    Double likeAction = 1.0;
+    @Value("${user-action.view}")
+    Double viewAction;
+
+    @Value("${user-action.register}")
+    Double registerAction;
+
+    @Value("${user-action.like}")
+    Double likeAction;
 
     public List<EventSimilarityAvro> updateSimilarity(UserActionAvro avro) {
         long userId = avro.getUserId();

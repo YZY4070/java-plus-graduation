@@ -9,6 +9,7 @@ import ru.practicum.ewm.stats.avro.UserActionAvro;
 import ru.practicum.model.ActionType;
 import ru.practicum.model.UserAction;
 import ru.practicum.repository.UserActionRepository;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Optional;
 
@@ -19,9 +20,14 @@ import java.util.Optional;
 public class UserActionHandler {
     final UserActionRepository userActionRepository;
 
-    Double viewAction = 0.4;
-    Double registerAction = 0.8;
-    Double likeAction = 1.0;
+    @Value("${user-action.view}")
+    Double viewAction;
+
+    @Value("${user-action.register}")
+    Double registerAction;
+
+    @Value("${user-action.like}")
+    Double likeAction;
 
     private Double toWeight(ActionType actionType) {
         return switch (actionType) {

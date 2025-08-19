@@ -2,12 +2,12 @@ package ru.practicum.handler;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import ru.practicum.grpc.stats.recommendation.InteractionsCountRequestProto;
 import ru.practicum.grpc.stats.recommendation.RecommendedEventProto;
 import ru.practicum.grpc.stats.recommendation.SimilarEventsRequestProto;
@@ -19,9 +19,7 @@ import ru.practicum.repository.SimRepository;
 import ru.practicum.repository.UserActionRepository;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -32,9 +30,14 @@ public class RecommendationHandler {
     final UserActionRepository userActionRepository;
     final SimRepository similarityRepository;
 
-    Double viewAction = 0.4;
-    Double registerAction = 0.8;
-    Double likeAction = 1.0;
+    @Value("${user-action.view}")
+    Double viewAction;
+
+    @Value("${user-action.register}")
+    Double registerAction;
+
+    @Value("${user-action.like}")
+    Double likeAction;
 
     public List<RecommendedEventProto> getRecommendationsForUser(UserPredictionsRequestProto request) {
         Long userId = request.getUserId();
