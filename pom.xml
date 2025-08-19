@@ -33,7 +33,8 @@
         <grpc.version>1.63.0</grpc.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-	<build>
+
+    <build>
 		<pluginManagement>
 			<plugins>
 				<plugin>
