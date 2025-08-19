@@ -6,11 +6,11 @@ import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.event.service.EventService;
-import ru.practicum.event.service.EventServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -22,8 +22,6 @@ import java.util.List;
 @Slf4j
 public class EventController {
     private final EventService eventService;
-    private final EventServiceImpl eventServiceImpl;
-//    private final CommentService commentService;
 
     @GetMapping
     public Collection<EventShortDto> getEvents(
@@ -35,24 +33,31 @@ public class EventController {
             @RequestParam(defaultValue = "false") Boolean onlyAvailable,
             @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-            @RequestParam(defaultValue = "10") @Positive Integer size,
-            HttpServletRequest request) {
+            @RequestParam(defaultValue = "10") @Positive Integer size) {
 
         log.info("Получен запрос GET /events с параметрами: text={}, categories={}, paid={}, rangeStart={}, " +
                         "rangeEnd={}, onlyAvailable={}, sort={}, from={}, size={}",
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
 
-        // Сохраняем информацию о просмотре для статистики
-        eventServiceImpl.addHit(request);
         return eventService.getEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
     }
 
     @GetMapping("/{id}")
-    public EventFullDto getEvent(@PathVariable Long id, HttpServletRequest request) {
-        log.info("Получен запрос GET /events/{}", id);
-        // Сохраняем информацию о просмотре для статистики
-        eventServiceImpl.addHit(request);
-        return eventService.getEvent(id);
+    public EventFullDto getEvent(@RequestHeader("X-EWM-USER-ID") Long userId, @PathVariable Long eventId) {
+        log.info("Получен запрос GET /events/{}", eventId);
+        return eventService.getEvent(userId, eventId);
     }
 
+    @GetMapping("/recommendations")
+    @ResponseStatus(HttpStatus.OK)
+    public List<EventFullDto> getRecommendations(@RequestHeader("X-EWM-USER-ID") Long userId) {
+        log.info("Get recommendations for user with id: {}", userId);
+        return eventService.getRecommendations(userId);
+    }
+
+    @PutMapping("{eventId}/like")
+    public void likeEvent(@RequestHeader("X-EWM-USER-ID") Long userId, @PathVariable Long eventId) {
+        log.info("Like event with id: {} for user with id: {}", eventId, userId);
+        eventService.likeEvent(userId, eventId);
+    }
 }

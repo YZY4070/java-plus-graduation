@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.UserActionClient;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.State;
 import ru.practicum.dto.request.*;
@@ -12,10 +13,12 @@ import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.feign.EventClient;
 import ru.practicum.feign.UserClient;
+import ru.practicum.grpc.stats.action.ActionTypeProto;
 import ru.practicum.mapper.RequestMapper;
 import ru.practicum.model.Request;
 import ru.practicum.repository.RequestRepository;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +32,7 @@ public class RequestServiceImpl implements RequestService {
     private final UserClient userClient;
     private final EventClient eventClient;
     private final RequestMapper requestMapper;
+    final UserActionClient userActionClient;
 
     @Override
     @Transactional(readOnly = true)
@@ -85,6 +89,7 @@ public class RequestServiceImpl implements RequestService {
         }
 
         request = requestRepository.save(request);
+        userActionClient.collectUserAction(userId, eventId, ActionTypeProto.ACTION_REGISTER, Instant.now());
         return requestMapper.toParticipationRequestDto(request);
     }
 

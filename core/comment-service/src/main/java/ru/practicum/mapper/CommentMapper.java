@@ -1,14 +1,13 @@
 package ru.practicum.mapper;
 
 
-import lombok.experimental.UtilityClass;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import ru.practicum.model.Comment;
 import ru.practicum.dto.comment.CommentCreateDto;
 import ru.practicum.dto.comment.CommentDto;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.EventWithCommentsDto;
+import ru.practicum.model.Comment;
 
 import java.util.List;
 
@@ -17,7 +16,8 @@ public interface CommentMapper {
 
     @Mapping(target = "id", ignore = true) // генерируется БД
     @Mapping(target = "eventId", ignore = true) // будет выставляться отдельно
-    @Mapping(target = "authorId", ignore = true) // будет выставляться отдельно
+    @Mapping(target = "authorId", ignore = true)
+        // будет выставляться отдельно
     Comment toEntity(CommentCreateDto commentCreateDto);
 
     CommentDto toDto(Comment comment);
@@ -37,7 +37,6 @@ public interface CommentMapper {
     @Mapping(target = "initiator", source = "event.initiator")
     @Mapping(target = "state", source = "event.state")
     @Mapping(target = "publishedOn", source = "event.publishedOn")
-    @Mapping(target = "views", source = "event.views")
     @Mapping(target = "comments", source = "comments")
     EventWithCommentsDto toDto(EventFullDto event, List<CommentDto> comments);
 }

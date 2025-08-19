@@ -20,11 +20,11 @@ public interface EventMapper {
     @Mapping(target = "publishedOn", ignore = true)
     Event toEvent(NewEventDto newEventDto);
 
-    @Mapping(target = "views", source = "views")
-    EventFullDto toEventFullDto(Event event, Long views);
+    //@Mapping(target = "views", source = "views")
+    EventFullDto toEventFullDto(Event event);
 
-    @Mapping(target = "views", source = "views")
-    EventShortDto toEventShortDto(Event event, Long views);
+    //@Mapping(target = "views", source = "views")
+    EventShortDto toEventShortDto(Event event); //Long views);
 
     @Mapping(target = "id", ignore = true)
     Location toLocation(LocationDto locationDto);
