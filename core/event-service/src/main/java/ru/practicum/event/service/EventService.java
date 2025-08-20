@@ -12,7 +12,7 @@ public interface EventService {
                                         LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                         Boolean onlyAvailable, String sort, Integer from, Integer size);
 
-    EventFullDto getEvent(Long id);
+    EventFullDto getEvent(Long userId, Long eventId);
 
     // Приватные методы
     Collection<EventShortDto> getUserEvents(Long userId, Integer from, Integer size);
@@ -36,4 +36,7 @@ public interface EventService {
 
     EventFullDto getEventByUserFeign(Long eventId, Long userId);
 
+    List<EventFullDto> getRecommendations(Long userId);
+
+    void likeEvent(Long userId, Long eventId);
 }

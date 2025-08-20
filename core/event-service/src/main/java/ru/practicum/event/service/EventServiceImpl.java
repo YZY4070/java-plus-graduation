@@ -3,7 +3,6 @@ package ru.practicum.event.service;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageImpl;
@@ -12,17 +11,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.StatsClient;
+import ru.practicum.RecomendationClient;
+import ru.practicum.UserActionClient;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.repository.CategoryRepository;
 import ru.practicum.dto.event.*;
-import ru.practicum.dto.stats.StatsDtoRequest;
-import ru.practicum.dto.stats.StatsDtoResponse;
 import ru.practicum.dto.user.UserDto;
+import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.Location;
-
-import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.QEvent;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.event.repository.LocationRepository;
@@ -30,9 +27,14 @@ import ru.practicum.exception.ForbiddenException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
 import ru.practicum.feign.UserClient;
+import ru.practicum.grpc.stats.action.ActionTypeProto;
+import ru.practicum.grpc.stats.recommendation.RecommendedEventProto;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,8 +47,9 @@ public class EventServiceImpl implements EventService {
     private final UserClient userClient;
     private final LocationRepository locationRepository;
     private final EventMapper eventMapper;
-    private final StatsClient statsClient;
     private final EntityManager entityManager;
+    final RecomendationClient recommendationsClient;
+    final UserActionClient userActionClient;
 
 
     @Override
@@ -107,32 +110,20 @@ public class EventServiceImpl implements EventService {
 
         PageImpl<Event> page = new PageImpl<>(events, pageable, totalCount);
 
-        List<String> uris = page.stream()
-                .map(e -> "/events/" + e.getId())
-                .collect(Collectors.toList());
-
-        Map<Long, Long> viewStats = getViewStats(uris);
-
         return page.stream()
-                .map(e -> eventMapper.toEventShortDto(e, viewStats.getOrDefault(e.getId(), 0L)))
+                .map(eventMapper::toEventShortDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public EventFullDto getEvent(Long id) {
-        Event event = findEventById(id);
-
-        // Проверяем, что событие опубликовано
+    public EventFullDto getEvent(Long userId, Long eventId) {
+        Event event = findEventById(eventId);
         if (event.getState() != State.PUBLISHED) {
-            throw new NotFoundException("Событие с id=" + id + " не опубликовано");
+            throw new NotFoundException("Событие с id=" + eventId + " не опубликовано");
         }
-
-        // Получаем статистику просмотров
-        List<String> uris = List.of("/events/" + id);
-        Map<Long, Long> viewStats = getViewStats(uris);
-
-        return eventMapper.toEventFullDto(event, viewStats.getOrDefault(id, 0L));
+        userActionClient.collectUserAction(userId, eventId, ActionTypeProto.ACTION_VIEW, Instant.now());
+        return eventMapper.toEventFullDto(event);
     }
 
     @Override
@@ -141,16 +132,8 @@ public class EventServiceImpl implements EventService {
         UserDto user = findUserById(userId);
         Pageable pageable = PageRequest.of(from / size, size);
         var events = eventRepository.findAllByInitiatorId(user.getId(), pageable);
-
-        // Получаем статистику просмотров
-        List<String> uris = events.stream()
-                .map(event -> "/events/" + event.getId())
-                .collect(Collectors.toList());
-
-        Map<Long, Long> viewStats = getViewStats(uris);
-
         return events.stream()
-                .map(event -> eventMapper.toEventShortDto(event, viewStats.getOrDefault(event.getId(), 0L)))
+                .map(eventMapper::toEventShortDto)
                 .collect(Collectors.toList());
     }
 
@@ -180,7 +163,7 @@ public class EventServiceImpl implements EventService {
         event.setLocation(location);
         event = eventRepository.save(event);
 
-        return eventMapper.toEventFullDto(event, 0L);
+        return eventMapper.toEventFullDto(event); //0L);
     }
 
     @Override
@@ -190,10 +173,7 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findByIdAndInitiatorId(eventId, user.getId())
                 .orElseThrow(() -> new NotFoundException("Событие с id=" + eventId + " не найдено"));
 
-        // Получаем статистику просмотров
-        List<String> uris = List.of("/events/" + eventId);
-        Map<Long, Long> viewStats = getViewStats(uris);
-        EventFullDto eventFullDto = eventMapper.toEventFullDto(event, viewStats.getOrDefault(eventId, 0L));
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
         UserDto userDto = userClient.getUserById(user.getId());
         UserShortDto userShortDto = UserShortDto.builder()
                 .id(userDto.getId())
@@ -230,12 +210,7 @@ public class EventServiceImpl implements EventService {
         }
 
         event = eventRepository.save(event);
-
-        // Получаем статистику просмотров
-        List<String> uris = List.of("/events/" + eventId);
-        Map<Long, Long> viewStats = getViewStats(uris);
-
-        return eventMapper.toEventFullDto(event, viewStats.getOrDefault(eventId, 0L));
+        return eventMapper.toEventFullDto(event);
     }
 
     @Override
@@ -252,16 +227,8 @@ public class EventServiceImpl implements EventService {
 
         Pageable pageable = PageRequest.of(from / size, size);
         var events = eventRepository.findAllByAdmin(users, statesList, categories, rangeStart, rangeEnd, pageable);
-
-        // Получаем статистику просмотров
-        List<String> uris = events.stream()
-                .map(event -> "/events/" + event.getId())
-                .collect(Collectors.toList());
-
-        Map<Long, Long> viewStats = getViewStats(uris);
-
         return events.stream()
-                .map(event -> eventMapper.toEventFullDto(event, viewStats.getOrDefault(event.getId(), 0L)))
+                .map(eventMapper::toEventFullDto)
                 .collect(Collectors.toList());
     }
 
@@ -302,12 +269,7 @@ public class EventServiceImpl implements EventService {
         }
 
         event = eventRepository.save(event);
-
-        // Получаем статистику просмотров
-        List<String> uris = List.of("/events/" + eventId);
-        Map<Long, Long> viewStats = getViewStats(uris);
-
-        return eventMapper.toEventFullDto(event, viewStats.getOrDefault(eventId, 0L));
+        return eventMapper.toEventFullDto(event);
     }
 
     // Вспомогательные методы
@@ -423,55 +385,18 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    // Метод для сохранения информации о просмотре события
-    public void addHit(HttpServletRequest request) {
-        statsClient.hit(StatsDtoRequest.builder()
-                .app(APP_NAME)
-                .uri(request.getRequestURI())
-                .ip(request.getRemoteAddr())
-                .timestamp(LocalDateTime.now())
-                .build());
-    }
-
-    // Метод для получения статистики просмотров событий
-    private Map<Long, Long> getViewStats(List<String> uris) {
-        if (uris.isEmpty()) {
-            return Collections.emptyMap();
-        }
-
-
-        List<StatsDtoResponse> statsResponses = statsClient.getStatistics(LocalDateTime.of(2000, 1, 1, 0, 0, 0),  // Начальная дата достаточно давняя
-                LocalDateTime.now().plusHours(1),       // Текущее время + 1 час для надежности
-                uris,
-                true);
-
-        Map<Long, Long> viewStats = new HashMap<>();
-        for (StatsDtoResponse stat : statsResponses) {
-            try {
-                String uri = stat.getUri();
-                Long eventId = Long.parseLong(uri.substring(uri.lastIndexOf('/') + 1));
-                viewStats.put(eventId, stat.getHits());
-            } catch (Exception e) {
-                log.error("Ошибка при обработке статистики для URI: {}", stat.getUri(), e);
-            }
-        }
-
-        return viewStats;
-    }
 
     @Override
     public void updateEventForRequests(Long eventId, EventFullDto eventFullDto) {
-       Event event = findEventById(eventId);
-       event.setConfirmedRequests(eventFullDto.getConfirmedRequests());
-       eventRepository.save(event);
+        Event event = findEventById(eventId);
+        event.setConfirmedRequests(eventFullDto.getConfirmedRequests());
+        eventRepository.save(event);
     }
 
     @Override
     public EventFullDto getEventByIdFeign(Long eventId) {
         Event event = findEventById(eventId);
-        List<String> uris = List.of("/events/" + eventId);
-        Map<Long, Long> viewStats = getViewStats(uris);
-        EventFullDto eventFullDto = eventMapper.toEventFullDto(event, viewStats.getOrDefault(eventId, 0L));
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
         UserDto userDto = userClient.getUserById(event.getInitiatorId());
         UserShortDto userShortDto = UserShortDto.builder().id(userDto.getId()).name(userDto.getName()).build();
         eventFullDto.setInitiator(userShortDto);
@@ -479,7 +404,24 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventFullDto getEventByUserFeign(Long eventId, Long userId){
+    public EventFullDto getEventByUserFeign(Long eventId, Long userId) {
         return getUserEvent(userId, eventId);
+    }
+
+    @Override
+    public List<EventFullDto> getRecommendations(Long userId) {
+        Set<Long> eventIds = recommendationsClient.getRecommendationsForUser(userId, 10)
+                .map(RecommendedEventProto::getEventId).collect(Collectors.toSet());
+
+        return eventRepository
+                .findAllByIdIn(eventIds)
+                .stream()
+                .map(eventMapper::toEventFullDto)
+                .toList();
+    }
+
+    @Override
+    public void likeEvent(Long userId, Long eventId) {
+        userActionClient.collectUserAction(userId, eventId, ActionTypeProto.ACTION_LIKE, Instant.now());
     }
 }
